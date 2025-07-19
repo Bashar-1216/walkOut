@@ -21,7 +21,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="WalkOut Store API")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # ===================================================================
 # 3. WebSocket Connection Manager
 # ===================================================================
