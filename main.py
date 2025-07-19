@@ -9,13 +9,16 @@ import models
 import schemas
 import database
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+load_dotenv()  # تحميل متغيرات .env
 
-
+import stripe
 from datetime import datetime, timedelta
 import uuid
 from jose import jwt, JWTError
 import os
 SECRET_KEY = os.environ.get("SECRET_KEY")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 # ===================================================================
 # 2. Configuration & App Instance
 # ===================================================================
@@ -220,26 +223,30 @@ def checkout(session_id: int, db: Session = Depends(database.get_db)):
     
     total_amount = round(sum(item.quantity * float(item.price_at_pickup) for item in cart_items), 2)
     
-    print(f"--- Simulating Payment for user {session.user_id} with amount {total_amount} ---")
-    dummy_transaction_id = f"txn_{uuid.uuid4()}"
-    print(f"--- Payment Successful: {dummy_transaction_id} ---")
+    # دفع فعلي باستخدام Stripe
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=int(total_amount * 100),
+            currency="usd",
+            payment_method=session.user.payment_token,
+            confirm=True,
+        )
+        transaction_id = intent.id
+    except stripe.error.CardError as e:
+        raise HTTPException(status_code=400, detail=f"Payment failed: {e.user_message}")
 
-    new_receipt = models.Receipt(session_id=session_id, total_amount=total_amount, transaction_id=dummy_transaction_id)
+    new_receipt = models.Receipt(session_id=session_id, total_amount=total_amount, transaction_id=transaction_id)
     db.add(new_receipt)
-    db.flush()
 
-    receipt_details_for_response = []
     for item in cart_items:
         product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
         subtotal = item.quantity * float(item.price_at_pickup)
-        detail = models.Receipt_Details(receipt_id=new_receipt.id, product_name=product.name, quantity=item.quantity, price=item.price_at_pickup, subtotal=subtotal)
-        db.add(detail)
-        receipt_details_for_response.append(detail)
+        db.add(models.Receipt_Details(receipt_id=new_receipt.id, product_name=product.name, quantity=item.quantity, price=item.price_at_pickup, subtotal=subtotal))
 
     session.status = 'completed'
     db.commit()
     db.refresh(new_receipt)
-    
+
     return new_receipt
 
 
