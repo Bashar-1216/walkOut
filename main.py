@@ -5,7 +5,10 @@ from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocke
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import Dict, List
-from . import models, schemas, database
+import models
+import schemas
+import database
+
 from datetime import datetime, timedelta
 import uuid
 from jose import jwt, JWTError
