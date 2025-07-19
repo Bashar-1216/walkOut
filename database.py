@@ -1,12 +1,15 @@
 # file: database.py
 
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# --- Change these details for your PostgreSQL database ---
-DATABASE_URL = "postgresql://postgres:postgres@localhost/walkout_store_db"
-# Example: "postgresql://postgres:mysecretpassword@localhost/walkout_store_db"
+# --- قراءة DATABASE_URL من متغيرات البيئة ---
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise Exception("DATABASE_URL environment variable not set!")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -19,4 +22,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
