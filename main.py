@@ -8,6 +8,8 @@ from typing import Dict, List
 import models
 import schemas
 import database
+from fastapi.middleware.cors import CORSMiddleware
+
 
 from datetime import datetime, timedelta
 import uuid
