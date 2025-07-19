@@ -9,11 +9,11 @@ from . import models, schemas, database
 from datetime import datetime, timedelta
 import uuid
 from jose import jwt, JWTError
-
+import os
+SECRET_KEY = os.environ.get("SECRET_KEY")
 # ===================================================================
 # 2. Configuration & App Instance
 # ===================================================================
-SECRET_KEY = "a_very_secret_key_that_should_be_in_an_env_file"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
