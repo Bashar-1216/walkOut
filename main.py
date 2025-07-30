@@ -1,6 +1,9 @@
 # ===================================================================
 # 1. Imports
 # ===================================================================
+# ===================================================================
+# 1. Imports + إعدادات بدون .env
+# ===================================================================
 from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -9,21 +12,23 @@ import models
 import schemas
 import database
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-load_dotenv()  # تحميل متغيرات .env
-
 import stripe
 from datetime import datetime, timedelta
 import uuid
 from jose import jwt, JWTError
 import os
-SECRET_KEY = os.environ.get("SECRET_KEY")
-stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
-# ===================================================================
-# 2. Configuration & App Instance
-# ===================================================================
+
+# لا نستخدم load_dotenv() أبداً
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
+# المتغيّرات المطلوبة يجب أن توجد في Environment Variables مباشرةً
+SECRET_KEY = os.getenv("SECRET_KEY")
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+# تحقّق سريع أن القيم موجودة عند الإطلاق
+if not SECRET_KEY or not stripe.api_key:
+    raise RuntimeError("Environment variables SECRET_KEY and STRIPE_SECRET_KEY must be set!")
 
 # Create database tables on startup
 models.Base.metadata.create_all(bind=database.engine)
