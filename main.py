@@ -30,8 +30,7 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 if not SECRET_KEY or not stripe.api_key:
     raise RuntimeError("Environment variables SECRET_KEY and STRIPE_SECRET_KEY must be set!")
 
-# Create database tables on startup
-models.Base.metadata.create_all(bind=database.engine)
+
 
 app = FastAPI(title="WalkOut Store API")
 app.add_middleware(
