@@ -54,3 +54,13 @@ class Receipt_Details(Base):
     price = Column(DECIMAL(10, 2), nullable=False)
     subtotal = Column(DECIMAL(10, 2), nullable=False)
 
+
+
+class SecurityAlert(Base):
+    __tablename__ = "security_alerts"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    alert_type = Column(String, nullable=False, default="tailgating")
+    session_id = Column(Integer, ForeignKey("shopping_sessions.id"), nullable=True)
+    details = Column(String, nullable=True)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
