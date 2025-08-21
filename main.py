@@ -280,3 +280,41 @@ def update_payment_token(
     db.commit()
     db.refresh(current_user)
     return current_user      
+# In lib/main.py
+
+
+
+
+
+@app.post("/alerts/tailgating", status_code=status.HTTP_201_CREATED)
+def report_tailgating_alert(db: Session = Depends(database.get_db)):
+    # 1. ابحث عن آخر جلسة تم إنشاؤها في آخر 5 ثوانٍ
+    # هذا يفترض أن مسح الـ QR وإنشاء الجلسة يحدث قبل التسلل بلحظات
+    time_window = datetime.now() - timedelta(seconds=5)
+    
+    recent_session = db.query(models.Shopping_Session)\
+        .filter(models.Shopping_Session.entry_time >= time_window)\
+        .order_by(models.Shopping_Session.entry_time.desc())\
+        .first()
+
+    session_id_to_log = None
+    if recent_session:
+        session_id_to_log = recent_session.id
+
+    # 2. سجل الإنذار في قاعدة البيانات، مع ربطه بالجلسة إذا تم العثور عليها
+    new_alert = models.SecurityAlert(
+        session_id=session_id_to_log,
+        details=f"More than one person detected on entry. Associated with recent session: {session_id_to_log}"
+    )
+    db.add(new_alert)
+    db.commit()
+    
+    # 3. محاكاة لإبلاغ الحارس الأمني
+    print("="*50)
+    print(f"!!! SECURITY ALERT: TAILGATING DETECTED !!!")
+    if session_id_to_log:
+        print(f"!!! Possibly associated with Session ID: {session_id_to_log} !!!")
+    print(f"!!! Time: {datetime.now()} !!!")
+    print("="*50)
+
+    return {"message": "Alert logged successfully."}
