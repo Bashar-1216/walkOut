@@ -82,6 +82,10 @@ class Token(BaseModel):
 
 
 
+class TailgatingAlert(BaseModel):
+    pass 
+
+
 
 class PaymentTokenUpdate(BaseModel):
     payment_token: str
