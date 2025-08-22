@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     phone_number: str
+    payment_token: Optional[str] = None
     class Config:
         from_attributes = True
 
